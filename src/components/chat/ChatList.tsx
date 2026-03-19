@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Icon from '@/components/ui/icon';
 import { CHATS, Chat } from './data';
+import { sms } from '@/lib/sounds';
 
 interface Props {
   onOpen: (chat: Chat) => void;
@@ -8,6 +9,12 @@ interface Props {
 }
 
 export default function ChatList({ onOpen, activeId }: Props) {
+  // Имитация входящего сообщения — звук при монтировании
+  useEffect(() => {
+    const timer = setTimeout(() => { sms(); }, 1800);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div className="flex flex-col h-full">
       <div className="px-4 pt-6 pb-4">

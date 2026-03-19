@@ -41,8 +41,12 @@ export default function ProfileView({ user }: Props) {
               className="text-center font-bold text-xl bg-transparent border-b border-purple-500/50 focus:outline-none text-foreground pb-1 w-full max-w-xs"
             />
           ) : (
-            <h2 className="font-bold text-xl">{name}</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="font-bold text-xl">{name}</h2>
+              {user.is_premium && <span className="text-amber-400 text-lg">⭐</span>}
+            </div>
           )}
+          {user.username && <p className="text-xs text-purple-400 mt-0.5">@{user.username}</p>}
           <p className="text-sm text-emerald-400 mt-1">● {status}</p>
         </div>
 
@@ -94,9 +98,10 @@ export default function ProfileView({ user }: Props) {
 
         {/* Info */}
         {[
+          { icon: 'AtSign', label: 'Юзернейм', value: user.username ? `@${user.username}` : 'Не задан' },
           { icon: 'Phone', label: 'Телефон', value: user.phone },
           { icon: 'Mail', label: 'Email', value: user.email || 'Не указан' },
-          { icon: 'Calendar', label: 'ID', value: `#${user.id}` },
+          { icon: 'Hash', label: 'ID', value: `#${user.id}` },
         ].map(item => (
           <div key={item.label} className="flex items-center gap-3 px-1">
             <div className="w-9 h-9 rounded-xl glass flex items-center justify-center flex-shrink-0">

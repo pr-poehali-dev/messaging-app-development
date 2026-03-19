@@ -1,4 +1,5 @@
 {
+  "stories": "https://functions.poehali.dev/22d1eca5-140c-4832-958e-9c5a2350936f",
   "auth-register": "https://functions.poehali.dev/7f7893d7-fb1a-4c3a-b14f-129dde7586d1",
   "auth-send-code": "https://functions.poehali.dev/7465a107-a62f-4809-8a43-de0e3b16615d",
   "auth-verify-code": "https://functions.poehali.dev/4e08bc11-89be-4eb6-99fb-35227b0060e0",

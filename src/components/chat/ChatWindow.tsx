@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Icon from '@/components/ui/icon';
 import { Chat, MESSAGES, Message } from './data';
+import { send as sendSound, call as callSound, stopRing } from '@/lib/sounds';
 
 interface Props {
   chat: Chat;
@@ -19,8 +20,26 @@ export default function ChatWindow({ chat, onBack }: Props) {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  const [showCallUI, setShowCallUI] = useState(false);
+  const [callDuration, setCallDuration] = useState(0);
+  const callTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const startCall = () => {
+    setShowCallUI(true);
+    setCallDuration(0);
+    callSound();
+    callTimerRef.current = setInterval(() => setCallDuration(d => d + 1), 1000);
+  };
+  const endCall = () => {
+    setShowCallUI(false);
+    stopRing();
+    if (callTimerRef.current) clearInterval(callTimerRef.current);
+  };
+  const callTime = `${String(Math.floor(callDuration / 60)).padStart(2, '0')}:${String(callDuration % 60).padStart(2, '0')}`;
+
   const send = () => {
     if (!input.trim()) return;
+    sendSound();
     const msg: Message = {
       id: Date.now(),
       text: input.trim(),
@@ -39,7 +58,7 @@ export default function ChatWindow({ chat, onBack }: Props) {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
       {/* Header */}
       <div className="glass-strong px-4 py-3 flex items-center gap-3 border-b border-border/50 flex-shrink-0">
         <button onClick={onBack} className="md:hidden w-8 h-8 rounded-xl glass flex items-center justify-center">
@@ -66,10 +85,10 @@ export default function ChatWindow({ chat, onBack }: Props) {
           <p className="text-xs text-emerald-400">{chat.online ? 'онлайн' : 'был(а) недавно'}</p>
         </div>
         <div className="flex items-center gap-2">
-          <button className="w-8 h-8 rounded-xl glass flex items-center justify-center hover:neon-purple transition-all">
+          <button onClick={startCall} className="w-8 h-8 rounded-xl glass flex items-center justify-center hover:neon-purple transition-all">
             <Icon name="Phone" size={15} className="text-purple-400" />
           </button>
-          <button className="w-8 h-8 rounded-xl glass flex items-center justify-center hover:neon-cyan transition-all">
+          <button onClick={startCall} className="w-8 h-8 rounded-xl glass flex items-center justify-center hover:neon-cyan transition-all">
             <Icon name="Video" size={15} className="text-cyan-400" />
           </button>
           <button className="w-8 h-8 rounded-xl glass flex items-center justify-center">
@@ -166,6 +185,37 @@ export default function ChatWindow({ chat, onBack }: Props) {
           </button>
         </div>
       </div>
+
+      {/* Call UI overlay */}
+      {showCallUI && (
+        <div className="absolute inset-0 z-30 bg-gradient-to-br from-purple-900 via-indigo-900 to-cyan-900 flex flex-col items-center justify-between py-12 animate-fade-in">
+          <div className="flex flex-col items-center gap-3">
+            <div className="avatar-ring">
+              <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center text-5xl border-4 border-background">
+                {chat.avatar}
+              </div>
+            </div>
+            <h3 className="text-2xl font-bold text-white">{chat.name}</h3>
+            <p className="text-white/60 text-sm">{callDuration < 3 ? 'Вызов...' : callTime}</p>
+            <div className="flex items-center gap-1.5 bg-white/10 rounded-full px-3 py-1">
+              <Icon name="Lock" size={10} className="text-cyan-400" />
+              <span className="text-xs text-cyan-400">Зашифрованный звонок</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-8">
+            <button className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center">
+              <Icon name="MicOff" size={22} className="text-white" />
+            </button>
+            <button onClick={endCall}
+              className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center shadow-lg shadow-red-500/40 hover:bg-red-400 transition-colors">
+              <Icon name="PhoneOff" size={26} className="text-white" />
+            </button>
+            <button className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center">
+              <Icon name="Volume2" size={22} className="text-white" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -7,19 +7,27 @@ import NotificationsView from '@/components/chat/NotificationsView';
 import GalleryView from '@/components/chat/GalleryView';
 import ProfileView from '@/components/chat/ProfileView';
 import SettingsView from '@/components/chat/SettingsView';
+import StoriesBar from '@/components/chat/StoriesBar';
+import CreateStoryModal from '@/components/chat/CreateStoryModal';
+import ChannelsView from '@/components/chat/ChannelsView';
+import PremiumScreen from '@/components/chat/PremiumScreen';
 import { Chat, NOTIFICATIONS } from '@/components/chat/data';
 import { User } from '@/lib/api';
 
-type Tab = 'chats' | 'search' | 'gallery' | 'notifications' | 'profile' | 'settings';
+type Tab = 'chats' | 'search' | 'channels' | 'gallery' | 'notifications' | 'profile' | 'settings';
 
 const NAV_ITEMS: { key: Tab; icon: string; label: string }[] = [
   { key: 'chats', icon: 'MessageCircle', label: 'Чаты' },
   { key: 'search', icon: 'Search', label: 'Поиск' },
+  { key: 'channels', icon: 'Rss', label: 'Каналы' },
   { key: 'gallery', icon: 'Image', label: 'Галерея' },
   { key: 'notifications', icon: 'Bell', label: 'Уведомления' },
   { key: 'profile', icon: 'User', label: 'Профиль' },
   { key: 'settings', icon: 'Settings', label: 'Настройки' },
 ];
+
+// Mobile nav — только 5 пунктов
+const MOBILE_NAV: Tab[] = ['chats', 'search', 'channels', 'notifications', 'profile'];
 
 interface Props {
   user: User;
@@ -29,6 +37,8 @@ interface Props {
 export default function Index({ user, onLogout }: Props) {
   const [tab, setTab] = useState<Tab>('chats');
   const [activeChat, setActiveChat] = useState<Chat | null>(null);
+  const [showCreateStory, setShowCreateStory] = useState(false);
+  const [showPremium, setShowPremium] = useState(false);
 
   const unreadNotifs = NOTIFICATIONS.filter(n => !n.read).length;
 
@@ -39,14 +49,39 @@ export default function Index({ user, onLogout }: Props) {
 
   const renderMain = () => {
     switch (tab) {
-      case 'chats': return <ChatList onOpen={setActiveChat} activeId={activeChat?.id ?? null} />;
+      case 'chats': return (
+        <div className="flex flex-col h-full">
+          <StoriesBar user={user} onCreateStory={() => setShowCreateStory(true)} />
+          <div className="flex-1 overflow-hidden">
+            <ChatList onOpen={setActiveChat} activeId={activeChat?.id ?? null} />
+          </div>
+        </div>
+      );
       case 'search': return <SearchView />;
+      case 'channels': return <ChannelsView />;
       case 'gallery': return <GalleryView />;
       case 'notifications': return <NotificationsView />;
       case 'profile': return <ProfileView user={user} />;
-      case 'settings': return <SettingsView onLogout={onLogout} />;
+      case 'settings': return (
+        <SettingsView
+          onLogout={onLogout}
+          onOpenPremium={() => setShowPremium(true)}
+        />
+      );
     }
   };
+
+  if (showPremium) {
+    return (
+      <div className="w-screen h-screen flex overflow-hidden relative">
+        <div className="orb w-96 h-96 bg-amber-600 top-[-10%] left-[-5%]" />
+        <div className="orb w-80 h-80 bg-rose-500 bottom-[-10%] right-[25%]" style={{ animationDelay: '3s' }} />
+        <div className="w-full h-full overflow-hidden relative z-10">
+          <PremiumScreen user={user} onClose={() => setShowPremium(false)} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-screen h-screen flex overflow-hidden relative">
@@ -55,9 +90,9 @@ export default function Index({ user, onLogout }: Props) {
       <div className="orb w-80 h-80 bg-cyan-500 bottom-[-10%] right-[25%]" style={{ animationDelay: '3s' }} />
       <div className="orb w-64 h-64 bg-pink-600 top-[40%] right-[-5%]" style={{ animationDelay: '6s' }} />
 
-      {/* Sidebar left nav (desktop) */}
-      <div className="hidden md:flex flex-col w-16 glass-strong border-r border-border/50 py-6 items-center gap-2 relative z-10 flex-shrink-0">
-        <div className="mb-4">
+      {/* Desktop left icon nav */}
+      <div className="hidden md:flex flex-col w-16 glass-strong border-r border-border/50 py-6 items-center gap-1.5 relative z-10 flex-shrink-0">
+        <div className="mb-3">
           <div className="w-8 h-8 rounded-xl btn-grad flex items-center justify-center">
             <span className="text-white font-bold text-sm">P</span>
           </div>
@@ -82,6 +117,17 @@ export default function Index({ user, onLogout }: Props) {
             )}
           </button>
         ))}
+
+        {/* Premium shortcut */}
+        <div className="mt-auto">
+          <button
+            onClick={() => setShowPremium(true)}
+            title="Premium"
+            className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30 flex items-center justify-center hover:scale-110 transition-transform"
+          >
+            <span className="text-base">⭐</span>
+          </button>
+        </div>
       </div>
 
       {/* Left panel */}
@@ -90,6 +136,7 @@ export default function Index({ user, onLogout }: Props) {
         w-full md:w-80 lg:w-[340px]
         ${activeChat ? 'hidden md:flex md:flex-col' : 'flex flex-col'}
         h-full overflow-hidden
+        ${tab === 'channels' ? 'bg-white' : ''}
       `}>
         <div className="flex-1 overflow-hidden h-full">
           {renderMain()}
@@ -120,37 +167,64 @@ export default function Index({ user, onLogout }: Props) {
               <Icon name="Lock" size={12} className="text-cyan-400 lock-glow" />
               <span className="text-xs text-cyan-400">End-to-end шифрование активно</span>
             </div>
+            <div className="flex gap-3">
+              <button onClick={() => setShowPremium(true)}
+                className="flex items-center gap-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-full px-4 py-2 hover:scale-105 transition-transform">
+                <span className="text-sm">⭐</span>
+                <span className="text-xs text-amber-400 font-medium">Попробовать Premium</span>
+              </button>
+            </div>
           </div>
         )}
       </div>
 
       {/* Mobile bottom nav */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 glass-strong border-t border-border/50 z-20 px-2 py-2">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 glass-strong border-t border-border/50 z-20 px-1 py-1.5">
         <div className="flex items-center justify-around">
-          {NAV_ITEMS.map(item => (
-            <button
-              key={item.key}
-              onClick={() => switchTab(item.key)}
-              className={`relative flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all
-                ${tab === item.key ? 'nav-active' : ''}`}
-            >
-              <Icon
-                name={item.icon}
-                size={20}
-                className={tab === item.key ? 'text-purple-400' : 'text-muted-foreground'}
-              />
-              <span className={`text-[9px] ${tab === item.key ? 'text-purple-400' : 'text-muted-foreground'}`}>
-                {item.label}
-              </span>
-              {item.key === 'notifications' && unreadNotifs > 0 && (
-                <span className="absolute top-0 right-1 w-4 h-4 btn-grad rounded-full text-[9px] font-bold text-white flex items-center justify-center">
-                  {unreadNotifs}
+          {MOBILE_NAV.map(key => {
+            const item = NAV_ITEMS.find(n => n.key === key)!;
+            return (
+              <button
+                key={key}
+                onClick={() => switchTab(key)}
+                className={`relative flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-all
+                  ${tab === key ? 'nav-active' : ''}`}
+              >
+                <Icon
+                  name={item.icon}
+                  size={20}
+                  className={tab === key ? 'text-purple-400' : 'text-muted-foreground'}
+                />
+                <span className={`text-[9px] ${tab === key ? 'text-purple-400' : 'text-muted-foreground'}`}>
+                  {item.label}
                 </span>
-              )}
-            </button>
-          ))}
+                {key === 'notifications' && unreadNotifs > 0 && (
+                  <span className="absolute top-0 right-0 w-4 h-4 btn-grad rounded-full text-[9px] font-bold text-white flex items-center justify-center">
+                    {unreadNotifs}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+          {/* Settings на мобильном — как иконка */}
+          <button
+            onClick={() => switchTab('settings')}
+            className={`relative flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-all
+              ${tab === 'settings' ? 'nav-active' : ''}`}
+          >
+            <Icon name="Settings" size={20} className={tab === 'settings' ? 'text-purple-400' : 'text-muted-foreground'} />
+            <span className={`text-[9px] ${tab === 'settings' ? 'text-purple-400' : 'text-muted-foreground'}`}>Ещё</span>
+          </button>
         </div>
       </div>
+
+      {/* Create Story Modal */}
+      {showCreateStory && (
+        <CreateStoryModal
+          onClose={() => setShowCreateStory(false)}
+          onCreated={() => setShowCreateStory(false)}
+        />
+      )}
     </div>
   );
 }

@@ -7,16 +7,19 @@ export const API = {
   verifyCode: URLS['auth-verify-code'],
   register: URLS['auth-register'],
   me: URLS['auth-me'],
+  stories: URLS['stories'],
 };
 
 export interface User {
   id: number;
   name: string;
+  username?: string | null;
   email: string | null;
   avatar: string;
   status: string;
   phone: string;
   bio: string | null;
+  is_premium?: boolean;
 }
 
 const TOKEN_KEY = 'pulse_token';
