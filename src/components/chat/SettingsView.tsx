@@ -64,7 +64,11 @@ const SECTIONS: { title: string; items: SettingRow[] }[] = [
   },
 ];
 
-export default function SettingsView() {
+interface Props {
+  onLogout: () => void;
+}
+
+export default function SettingsView({ onLogout }: Props) {
   const [settings, setSettings] = useState({
     e2e: true,
     hideStatus: false,
@@ -94,9 +98,10 @@ export default function SettingsView() {
               {section.items.map((item, i) => (
                 <div
                   key={item.label}
+                  onClick={item.type === 'danger' ? onLogout : undefined}
                   className={`flex items-center gap-3 px-4 py-3.5 transition-all
                     ${i < section.items.length - 1 ? 'border-b border-border/50' : ''}
-                    ${item.type === 'danger' ? 'hover:bg-red-500/10' : 'hover:bg-muted/30'}
+                    ${item.type === 'danger' ? 'hover:bg-red-500/10 cursor-pointer' : 'hover:bg-muted/30'}
                     ${item.type !== 'toggle' ? 'cursor-pointer' : ''}`}
                 >
                   <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0

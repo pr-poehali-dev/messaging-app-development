@@ -1,0 +1,22 @@
+{
+  "tests": [
+    {
+      "name": "Отправка кода на номер",
+      "method": "POST",
+      "path": "/",
+      "body": {"phone": "+79991234567"},
+      "expectedStatus": 200,
+      "expectedBody": {"success": true},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Пустой номер",
+      "method": "POST",
+      "path": "/",
+      "body": {"phone": ""},
+      "expectedStatus": 400,
+      "expectedBody": {"error": "Укажите корректный номер телефона"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

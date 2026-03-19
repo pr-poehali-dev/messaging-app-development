@@ -8,6 +8,7 @@ import GalleryView from '@/components/chat/GalleryView';
 import ProfileView from '@/components/chat/ProfileView';
 import SettingsView from '@/components/chat/SettingsView';
 import { Chat, NOTIFICATIONS } from '@/components/chat/data';
+import { User } from '@/lib/api';
 
 type Tab = 'chats' | 'search' | 'gallery' | 'notifications' | 'profile' | 'settings';
 
@@ -20,7 +21,12 @@ const NAV_ITEMS: { key: Tab; icon: string; label: string }[] = [
   { key: 'settings', icon: 'Settings', label: 'Настройки' },
 ];
 
-export default function Index() {
+interface Props {
+  user: User;
+  onLogout: () => void;
+}
+
+export default function Index({ user, onLogout }: Props) {
   const [tab, setTab] = useState<Tab>('chats');
   const [activeChat, setActiveChat] = useState<Chat | null>(null);
 
@@ -37,8 +43,8 @@ export default function Index() {
       case 'search': return <SearchView />;
       case 'gallery': return <GalleryView />;
       case 'notifications': return <NotificationsView />;
-      case 'profile': return <ProfileView />;
-      case 'settings': return <SettingsView />;
+      case 'profile': return <ProfileView user={user} />;
+      case 'settings': return <SettingsView onLogout={onLogout} />;
     }
   };
 

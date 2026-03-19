@@ -1,0 +1,31 @@
+{
+  "tests": [
+    {
+      "name": "Короткое имя",
+      "method": "POST",
+      "path": "/",
+      "body": {"phone": "+79991234567", "name": "А", "email": "test@test.com"},
+      "expectedStatus": 400,
+      "expectedBody": {"error": "Введите имя (минимум 2 символа)"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Неверный email",
+      "method": "POST",
+      "path": "/",
+      "body": {"phone": "+79991234567", "name": "Алиса", "email": "notanemail"},
+      "expectedStatus": 400,
+      "expectedBody": {"error": "Неверный формат email"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Нет номера",
+      "method": "POST",
+      "path": "/",
+      "body": {"name": "Алиса", "email": "a@b.com"},
+      "expectedStatus": 400,
+      "expectedBody": {"error": "Нет номера телефона"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

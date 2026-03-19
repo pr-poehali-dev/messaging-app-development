@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
 import Icon from '@/components/ui/icon';
+import { User } from '@/lib/api';
 
-export default function ProfileView() {
+interface Props {
+  user: User;
+}
+
+export default function ProfileView({ user }: Props) {
   const [editing, setEditing] = useState(false);
-  const [name, setName] = useState('Юра Космонавт');
-  const [bio, setBio] = useState('Разрабатываю сайты быстрее скорости света 🚀');
-  const [status, setStatus] = useState('Доступен');
+  const [name, setName] = useState(user.name || 'Пользователь');
+  const [bio, setBio] = useState(user.bio || '');
+  const [status, setStatus] = useState(user.status || 'Доступен');
 
   const statuses = ['Доступен', 'Занят', 'Не беспокоить', 'Нет на месте'];
 
@@ -89,10 +94,9 @@ export default function ProfileView() {
 
         {/* Info */}
         {[
-          { icon: 'Phone', label: 'Телефон', value: '+7 (999) 123-45-67' },
-          { icon: 'Mail', label: 'Email', value: 'yura@pulse.app' },
-          { icon: 'MapPin', label: 'Город', value: 'Москва' },
-          { icon: 'Calendar', label: 'Регистрация', value: 'Март 2026' },
+          { icon: 'Phone', label: 'Телефон', value: user.phone },
+          { icon: 'Mail', label: 'Email', value: user.email || 'Не указан' },
+          { icon: 'Calendar', label: 'ID', value: `#${user.id}` },
         ].map(item => (
           <div key={item.label} className="flex items-center gap-3 px-1">
             <div className="w-9 h-9 rounded-xl glass flex items-center justify-center flex-shrink-0">

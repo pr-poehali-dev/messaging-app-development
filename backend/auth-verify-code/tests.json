@@ -1,0 +1,22 @@
+{
+  "tests": [
+    {
+      "name": "Неверный код",
+      "method": "POST",
+      "path": "/",
+      "body": {"phone": "+79991234567", "code": "000000"},
+      "expectedStatus": 400,
+      "expectedBody": {"error": "Неверный код"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Пустые поля",
+      "method": "POST",
+      "path": "/",
+      "body": {},
+      "expectedStatus": 400,
+      "expectedBody": {"error": "Укажите номер и код"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}
